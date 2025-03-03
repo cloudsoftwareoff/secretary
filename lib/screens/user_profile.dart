@@ -32,26 +32,26 @@ class _UserProfileState extends State<UserProfile> {
     }
 
     try {
-      // Try to get user data from Firestore
+    
       DocumentSnapshot userDoc =
           await _firestore.collection('users').doc(user.uid).get();
 
       if (userDoc.exists) {
-        // User data exists in Firestore
+      
         setState(() {
           _appUser = AppUser.fromMap(userDoc.data() as Map<String, dynamic>);
           _isLoading = false;
         });
       } else {
-        // Create user data from auth data
+      
         AppUser newUser = AppUser(
           uid: user.uid,
-          name: user.email!.split(':')[0] ,
+          name: user.email!.split('@')[0],
           mail: user.email ?? '',
           role: 'secretary',
         );
 
-        // Save the new user to Firestore
+      
         await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
 
         setState(() {
@@ -60,7 +60,7 @@ class _UserProfileState extends State<UserProfile> {
         });
       }
     } catch (e) {
-      // Fallback to basic auth data if there's an error
+    
       setState(() {
         _appUser = AppUser(
           uid: user.uid,
@@ -238,7 +238,7 @@ class _UserProfileState extends State<UserProfile> {
 
   Color _getRoleColor(String? role) {
     switch (role?.toLowerCase()) {
-      case 'admin':
+      case 'director':
         return Colors.deepPurple;
       case 'moderator':
         return Colors.blue;

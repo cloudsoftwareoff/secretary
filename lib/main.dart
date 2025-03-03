@@ -14,11 +14,10 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-
   final notificationService = NotificationService();
   await notificationService.init();
 
-  await requestExactAlarmPermission();
+  await requestPermissions();
 
   runApp(const MyApp());
 }
