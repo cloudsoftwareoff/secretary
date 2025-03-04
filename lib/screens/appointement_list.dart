@@ -8,6 +8,7 @@ import 'package:secretary/screens/widgets/date_header.dart';
 import 'package:secretary/screens/widgets/search_delegate.dart';
 import 'package:secretary/screens/widgets/summary_stats_card.dart';
 import 'package:secretary/utils/notification_service.dart';
+import 'package:shimmer/shimmer.dart';
 
 class AppointmentsList extends StatefulWidget {
   const AppointmentsList({Key? key}) : super(key: key);
@@ -44,7 +45,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
         stream: AppointmentDB().getAppointmentsStream(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
+            return _buildShimmerLoading();
           }
           if (snapshot.hasError) {
             return Center(child: Text("Error: ${snapshot.error}"));
@@ -194,7 +195,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
           ElevatedButton(
             onPressed: () {
               setState(() {
-                _selectedFilter = tempFilter; // Apply the selected filter
+                _selectedFilter = tempFilter;
               });
               Navigator.pop(context);
             },
@@ -397,17 +398,71 @@ class _AppointmentsListState extends State<AppointmentsList> {
     );
   }
 
+  Widget _buildShimmerLoading() {
+    return ListView(
+      children: [
+        
+        Shimmer.fromColors(
+          baseColor: Colors.grey[300]!,
+          highlightColor: Colors.grey[100]!,
+          child: const SummaryStatsCard(
+            todayCount: 0,
+            upcomingCount: 0,
+            totalCount: 0,
+          ),
+        ),
+
+      
+        ...List.generate(
+            3,
+            (dateIndex) => Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                  
+                    Shimmer.fromColors(
+                      baseColor: Colors.grey[300]!,
+                      highlightColor: Colors.grey[100]!,
+                      child: Container(
+                        height: 40,
+                        margin: const EdgeInsets.symmetric(
+                            vertical: 8, horizontal: 16),
+                        color: Colors.white,
+                      ),
+                    ),
+
+                    
+                    ...List.generate(
+                        2,
+                        (index) => Shimmer.fromColors(
+                              baseColor: Colors.grey[300]!,
+                              highlightColor: Colors.grey[100]!,
+                              child: Container(
+                                height: 100,
+                                margin: const EdgeInsets.symmetric(
+                                    vertical: 8, horizontal: 16),
+                                decoration: BoxDecoration(
+                                  color: Colors.white,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                              ),
+                            )),
+                  ],
+                )),
+      ],
+    );
+  }
+
   void _confirmDelete(BuildContext context, Appointment appointment) {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text("Delete Appointment"),
+        title: const Text("Supprimer le rendez-vous"),
         content:
-            const Text("Are you sure you want to delete this appointment?"),
+            const Text("Etes-vous sûr de vouloir supprimer ce rendez-vous ?"),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context),
-            child: const Text("Cancel"),
+            child: const Text("Annuler"),
           ),
           ElevatedButton(
             onPressed: () {
@@ -415,7 +470,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
               Navigator.pop(context);
             },
             style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-            child: const Text("Delete"),
+            child: const Text("Supprimer"),
           ),
         ],
       ),

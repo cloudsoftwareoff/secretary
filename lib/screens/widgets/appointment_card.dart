@@ -23,29 +23,32 @@ class AppointmentCard extends StatelessWidget {
         appointment.description != null && appointment.description!.isNotEmpty;
 
     return Card(
-      elevation: 3,
-      shadowColor: Colors.black.withOpacity(0.2),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+      elevation: 2,
+      shadowColor: Colors.black.withOpacity(0.1),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+      ),
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(12),
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.all(12.0),
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               // Time column
               Container(
-                width: 70,
+                width: 60,
                 padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 4),
                 decoration: BoxDecoration(
                   color: theme.colorScheme.primaryContainer.withOpacity(0.2),
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(6),
                 ),
                 child: Text(
                   timeString,
+                  textAlign: TextAlign.center,
                   style: TextStyle(
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w600,
                     color: theme.colorScheme.primary,
                   ),
                 ),
@@ -59,24 +62,31 @@ class AppointmentCard extends StatelessWidget {
                     Text(
                       appointment.clientName,
                       style: theme.textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.bold,
+                        fontWeight: FontWeight.w600,
                       ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
                     const SizedBox(height: 6),
                     Row(
                       children: [
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 8, vertical: 2),
+                            horizontal: 8,
+                            vertical: 2,
+                          ),
                           decoration: BoxDecoration(
-                            color: Colors.grey[200],
+                            color: Colors.grey[100],
                             borderRadius: BorderRadius.circular(4),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.folder_outlined,
-                                  size: 14, color: Colors.grey[700]),
+                              Icon(
+                                Icons.folder_outlined,
+                                size: 14,
+                                color: Colors.grey[700],
+                              ),
                               const SizedBox(width: 4),
                               Text(
                                 "Dossier: ${appointment.folderNumber}",
@@ -91,13 +101,16 @@ class AppointmentCard extends StatelessWidget {
                       ],
                     ),
                     if (hasDescription) ...[
-                      const SizedBox(height: 10),
+                      const SizedBox(height: 8),
                       Row(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(Icons.description,
-                              size: 16, color: Colors.grey[600]),
-                          const SizedBox(width: 4),
+                          Icon(
+                            Icons.notes_rounded,
+                            size: 16,
+                            color: Colors.grey[600],
+                          ),
+                          const SizedBox(width: 6),
                           Expanded(
                             child: Text(
                               appointment.description!,
@@ -120,13 +133,16 @@ class AppointmentCard extends StatelessWidget {
                 onTap: onOptionsTap,
                 borderRadius: BorderRadius.circular(50),
                 child: Container(
-                  padding: const EdgeInsets.all(8),
+                  padding: const EdgeInsets.all(6),
                   decoration: BoxDecoration(
-                    color: Colors.grey[200],
+                    color: Colors.grey[100],
                     shape: BoxShape.circle,
                   ),
-                  child:
-                      Icon(Icons.more_vert, color: Colors.grey[700], size: 20),
+                  child: Icon(
+                    Icons.more_vert,
+                    color: Colors.grey[700],
+                    size: 18,
+                  ),
                 ),
               ),
             ],

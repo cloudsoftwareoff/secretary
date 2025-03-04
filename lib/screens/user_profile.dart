@@ -240,11 +240,6 @@ class _UserProfileState extends State<UserProfile> {
     switch (role?.toLowerCase()) {
       case 'director':
         return Colors.deepPurple;
-      case 'moderator':
-        return Colors.blue;
-      case 'premium':
-        return Colors.amber.shade800;
-      case 'user':
       default:
         return Colors.teal;
     }
