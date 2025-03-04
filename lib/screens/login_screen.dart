@@ -69,11 +69,15 @@ class _LoginScreenState extends State<LoginScreen> {
                   SizedBox(height: 40),
 
                   Center(
-                    child: Icon(
-                      Icons.lock_outlined,
-                      size: 80,
-                      color: theme.colorScheme.secondary,
-                    ),
+                    child: ClipRRect(
+    borderRadius: BorderRadius.circular(20), // Matches the container's radius
+    child: Image.asset(
+      'assets/images/EJ-logo.png', // Replace with your asset path
+      width: 80, // Matches the original icon size
+      height: 80,
+      fit: BoxFit.cover,
+    ),
+  ),
                   ),
                   SizedBox(height: 24),
                   Text(
