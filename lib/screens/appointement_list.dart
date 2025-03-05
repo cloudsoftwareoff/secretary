@@ -477,7 +477,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
   }
 
   void _editAppointment(BuildContext context, Appointment appointment) {
-    // Controllers for the form fields
+    
     final TextEditingController clientNameController =
         TextEditingController(text: appointment.clientName);
     final TextEditingController folderNumberController =
@@ -488,13 +488,13 @@ class _AppointmentsListState extends State<AppointmentsList> {
     DateTime selectedDate = appointment.appointmentDateTime;
     TimeOfDay selectedTime =
         TimeOfDay.fromDateTime(appointment.appointmentDateTime);
-// Use the earlier of the appointment date or today as firstDate
+
     final DateTime firstDate =
         appointment.appointmentDateTime.isBefore(DateTime.now())
             ? appointment.appointmentDateTime
-                .subtract(const Duration(days: 1)) // Go one day earlier
+                .subtract(const Duration(days: 1)) 
             : DateTime.now();
-    // Function to update the date
+
     Future<void> _selectDate(BuildContext context) async {
       final DateTime? picked = await showDatePicker(
         context: context,
@@ -515,7 +515,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
       }
     }
 
-    // Function to update the time
+
     Future<void> _selectTime(BuildContext context) async {
       final TimeOfDay? picked = await showTimePicker(
         context: context,
