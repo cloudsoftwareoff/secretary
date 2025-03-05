@@ -32,18 +32,15 @@ class _UserProfileState extends State<UserProfile> {
     }
 
     try {
-    
       DocumentSnapshot userDoc =
           await _firestore.collection('users').doc(user.uid).get();
 
       if (userDoc.exists) {
-      
         setState(() {
           _appUser = AppUser.fromMap(userDoc.data() as Map<String, dynamic>);
           _isLoading = false;
         });
       } else {
-      
         AppUser newUser = AppUser(
           uid: user.uid,
           name: user.email!.split('@')[0],
@@ -51,7 +48,6 @@ class _UserProfileState extends State<UserProfile> {
           role: 'secretary',
         );
 
-      
         await _firestore.collection('users').doc(user.uid).set(newUser.toMap());
 
         setState(() {
@@ -60,7 +56,6 @@ class _UserProfileState extends State<UserProfile> {
         });
       }
     } catch (e) {
-    
       setState(() {
         _appUser = AppUser(
           uid: user.uid,

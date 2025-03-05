@@ -21,7 +21,7 @@ class _DashboardState extends State<Dashboard> {
   void initState() {
     super.initState();
     _pages = [
-      const AppointmentsList(),
+      AppointmentsList(userRole: widget.userRole),
       if (widget.userRole != 'director') const AddAppointment(),
       UserProfile(),
     ];

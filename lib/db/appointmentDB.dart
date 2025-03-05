@@ -31,7 +31,7 @@ class AppointmentDB {
   }
 
   // Read
-  Stream<List<Appointment>> getAppointmentsStream() {
+  Stream<List<Appointment>> getAppointmentsStream(String userRole) {
     return _appointmentsCollection
         .orderBy("appointmentDateTime", descending: true)
         .snapshots()
@@ -39,8 +39,11 @@ class AppointmentDB {
       final appointments = snapshot.docs.map((doc) {
         return Appointment.fromMap(doc.data() as Map<String, dynamic>);
       }).toList();
+      
+      if(userRole!="secretary"){
 
       _scheduleNotificationsForAppointments(appointments);
+      }
 
       return appointments;
     });

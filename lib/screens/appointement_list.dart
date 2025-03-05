@@ -4,14 +4,15 @@ import 'package:intl/intl.dart';
 import 'package:secretary/db/appointmentDB.dart';
 import 'package:secretary/models/appointment.dart';
 import 'package:secretary/screens/widgets/appointment_card.dart';
+import 'package:secretary/screens/widgets/appointment_details.dart';
 import 'package:secretary/screens/widgets/date_header.dart';
 import 'package:secretary/screens/widgets/search_delegate.dart';
 import 'package:secretary/screens/widgets/summary_stats_card.dart';
-import 'package:secretary/utils/notification_service.dart';
 import 'package:shimmer/shimmer.dart';
 
 class AppointmentsList extends StatefulWidget {
-  const AppointmentsList({Key? key}) : super(key: key);
+  final String userRole;
+  const AppointmentsList({super.key, required this.userRole});
 
   @override
   State<AppointmentsList> createState() => _AppointmentsListState();
@@ -23,13 +24,12 @@ class _AppointmentsListState extends State<AppointmentsList> {
 
   String _selectedFilter = 'All';
   List<Appointment> appList = [];
-  final TextEditingController _searchController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Appointments"),
+        title: const Text("Rendez-vous"),
         actions: [
           IconButton(
             icon: const Icon(Icons.filter_list),
@@ -42,7 +42,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
         ],
       ),
       body: StreamBuilder<List<Appointment>>(
-        stream: AppointmentDB().getAppointmentsStream(),
+        stream: AppointmentDB().getAppointmentsStream(widget.userRole),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
             return _buildShimmerLoading();
@@ -64,7 +64,7 @@ class _AppointmentsListState extends State<AppointmentsList> {
 
           final filteredAppointments = _applyFilters(appointments);
 
-          return _buildAppointmentsList(filteredAppointments);
+          return _buildAppointmentsList(filteredAppointments, widget.userRole);
         },
       ),
     );
@@ -100,7 +100,8 @@ class _AppointmentsListState extends State<AppointmentsList> {
     }
   }
 
-  Widget _buildAppointmentsList(List<Appointment> appointments) {
+  Widget _buildAppointmentsList(
+      List<Appointment> appointments, String userRole) {
     // Group appointments by date
     final Map<String, List<Appointment>> groupedAppointments = {};
     for (var appointment in appointments) {
@@ -137,9 +138,12 @@ class _AppointmentsListState extends State<AppointmentsList> {
               ...appointmentsForDate.map((appointment) {
                 return AppointmentCard(
                   appointment: appointment,
-                  onTap: () => _viewAppointmentDetails(context, appointment),
-                  onOptionsTap: () =>
-                      _showAppointmentOptions(context, appointment),
+                  onTap: () => showAppointmentDetails(context,
+                      appointment), //_viewAppointmentDetails(context, appointment),
+                  onOptionsTap: () => userRole == 'secretary'
+                      ? _showAppointmentOptions(context, appointment)
+                      : null,
+                  userRole: userRole,
                 );
               }).toList(),
             ],
@@ -225,96 +229,96 @@ class _AppointmentsListState extends State<AppointmentsList> {
     );
   }
 
-  void _viewAppointmentDetails(BuildContext context, Appointment appointment) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
-      builder: (context) => Container(
-        padding: const EdgeInsets.all(24),
-        decoration: BoxDecoration(
-          color: Theme.of(context).scaffoldBackgroundColor,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with close button
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  "Détails du rendez-vous",
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-                IconButton(
-                  icon: const Icon(Icons.close),
-                  onPressed: () => Navigator.pop(context),
-                  padding: EdgeInsets.zero,
-                  constraints: const BoxConstraints(),
-                ),
-              ],
-            ),
-            const Divider(height: 24),
+  // void _viewAppointmentDetails(BuildContext context, Appointment appointment) {
+  //   showModalBottomSheet(
+  //     context: context,
+  //     isScrollControlled: true,
+  //     shape: const RoundedRectangleBorder(
+  //       borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+  //     ),
+  //     builder: (context) => Container(
+  //       padding: const EdgeInsets.all(24),
+  //       decoration: BoxDecoration(
+  //         color: Theme.of(context).scaffoldBackgroundColor,
+  //         borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+  //       ),
+  //       child: Column(
+  //         mainAxisSize: MainAxisSize.min,
+  //         crossAxisAlignment: CrossAxisAlignment.start,
+  //         children: [
+  //           // Header with close button
+  //           Row(
+  //             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //             children: [
+  //               Text(
+  //                 "Détails du rendez-vous",
+  //                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+  //                       fontWeight: FontWeight.bold,
+  //                     ),
+  //               ),
+  //               IconButton(
+  //                 icon: const Icon(Icons.close),
+  //                 onPressed: () => Navigator.pop(context),
+  //                 padding: EdgeInsets.zero,
+  //                 constraints: const BoxConstraints(),
+  //               ),
+  //             ],
+  //           ),
+  //           const Divider(height: 24),
 
-            // Appointment information with icons
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Column(
-                children: [
-                  _buildDetailRow(
-                    context,
-                    Icons.person,
-                    "Client",
-                    appointment.clientName,
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow(
-                    context,
-                    Icons.event,
-                    "Date",
-                    DateFormat('EEE, MMM d, yyyy')
-                        .format(appointment.appointmentDateTime),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow(
-                    context,
-                    Icons.access_time,
-                    "Temps",
-                    DateFormat('h:mm a')
-                        .format(appointment.appointmentDateTime),
-                  ),
-                  const SizedBox(height: 16),
-                  _buildDetailRow(
-                    context,
-                    Icons.folder,
-                    "Dossier",
-                    appointment.folderNumber,
-                  ),
-                  if (appointment.description != null &&
-                      appointment.description!.isNotEmpty) ...[
-                    const SizedBox(height: 16),
-                    _buildDetailRow(
-                      context,
-                      Icons.description,
-                      "Description",
-                      appointment.description!,
-                      isDescription: true,
-                    ),
-                  ],
-                ],
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
+  //           // Appointment information with icons
+  //           Padding(
+  //             padding: const EdgeInsets.symmetric(vertical: 16),
+  //             child: Column(
+  //               children: [
+  //                 _buildDetailRow(
+  //                   context,
+  //                   Icons.person,
+  //                   "Client",
+  //                   appointment.clientName,
+  //                 ),
+  //                 const SizedBox(height: 16),
+  //                 _buildDetailRow(
+  //                   context,
+  //                   Icons.event,
+  //                   "Date",
+  //                   DateFormat('EEE, MMM d, yyyy')
+  //                       .format(appointment.appointmentDateTime),
+  //                 ),
+  //                 const SizedBox(height: 16),
+  //                 _buildDetailRow(
+  //                   context,
+  //                   Icons.access_time,
+  //                   "Temps",
+  //                   DateFormat('h:mm a')
+  //                       .format(appointment.appointmentDateTime),
+  //                 ),
+  //                 const SizedBox(height: 16),
+  //                 _buildDetailRow(
+  //                   context,
+  //                   Icons.folder,
+  //                   "Dossier",
+  //                   appointment.folderNumber,
+  //                 ),
+  //                 if (appointment.description != null &&
+  //                     appointment.description!.isNotEmpty) ...[
+  //                   const SizedBox(height: 16),
+  //                   _buildDetailRow(
+  //                     context,
+  //                     Icons.description,
+  //                     "Description",
+  //                     appointment.description!,
+  //                     isDescription: true,
+  //                   ),
+  //                 ],
+  //               ],
+  //             ),
+  //           ),
+  //         ],
+  //       ),
+  //     ),
+  //   );
+  // }
 
 // Helper method to build consistent detail rows
   Widget _buildDetailRow(
@@ -376,17 +380,18 @@ class _AppointmentsListState extends State<AppointmentsList> {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // ListTile(
-            //   leading: const Icon(Icons.edit, color: Colors.blue),
-            //   title: const Text("Edit Appointment"),
-            //   onTap: () {
-            //     Navigator.pop(context);
-            //     //! edit screen
-            //   },
-            // ),
+            ListTile(
+              leading: const Icon(Icons.edit, color: Colors.blue),
+              title: const Text("Modifier le rendez-vous"),
+              onTap: () {
+                Navigator.pop(context);
+                _editAppointment(context, appointment);
+              },
+            ),
             ListTile(
               leading: const Icon(Icons.delete_outline, color: Colors.red),
-              title: const Text("Delete", style: TextStyle(color: Colors.red)),
+              title:
+                  const Text("Supprimer", style: TextStyle(color: Colors.red)),
               onTap: () {
                 Navigator.pop(context);
                 _confirmDelete(context, appointment);
@@ -401,7 +406,6 @@ class _AppointmentsListState extends State<AppointmentsList> {
   Widget _buildShimmerLoading() {
     return ListView(
       children: [
-        
         Shimmer.fromColors(
           baseColor: Colors.grey[300]!,
           highlightColor: Colors.grey[100]!,
@@ -411,14 +415,11 @@ class _AppointmentsListState extends State<AppointmentsList> {
             totalCount: 0,
           ),
         ),
-
-      
         ...List.generate(
             3,
             (dateIndex) => Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                  
                     Shimmer.fromColors(
                       baseColor: Colors.grey[300]!,
                       highlightColor: Colors.grey[100]!,
@@ -429,8 +430,6 @@ class _AppointmentsListState extends State<AppointmentsList> {
                         color: Colors.white,
                       ),
                     ),
-
-                    
                     ...List.generate(
                         2,
                         (index) => Shimmer.fromColors(
@@ -473,6 +472,166 @@ class _AppointmentsListState extends State<AppointmentsList> {
             child: const Text("Supprimer"),
           ),
         ],
+      ),
+    );
+  }
+
+  void _editAppointment(BuildContext context, Appointment appointment) {
+    // Controllers for the form fields
+    final TextEditingController clientNameController =
+        TextEditingController(text: appointment.clientName);
+    final TextEditingController folderNumberController =
+        TextEditingController(text: appointment.folderNumber);
+    final TextEditingController descriptionController =
+        TextEditingController(text: appointment.description ?? '');
+
+    DateTime selectedDate = appointment.appointmentDateTime;
+    TimeOfDay selectedTime =
+        TimeOfDay.fromDateTime(appointment.appointmentDateTime);
+// Use the earlier of the appointment date or today as firstDate
+    final DateTime firstDate =
+        appointment.appointmentDateTime.isBefore(DateTime.now())
+            ? appointment.appointmentDateTime
+                .subtract(const Duration(days: 1)) // Go one day earlier
+            : DateTime.now();
+    // Function to update the date
+    Future<void> _selectDate(BuildContext context) async {
+      final DateTime? picked = await showDatePicker(
+        context: context,
+        initialDate: selectedDate,
+        firstDate: firstDate,
+        lastDate: DateTime.now().add(const Duration(days: 365)),
+      );
+      if (picked != null && picked != selectedDate) {
+        setState(() {
+          selectedDate = DateTime(
+            picked.year,
+            picked.month,
+            picked.day,
+            selectedTime.hour,
+            selectedTime.minute,
+          );
+        });
+      }
+    }
+
+    // Function to update the time
+    Future<void> _selectTime(BuildContext context) async {
+      final TimeOfDay? picked = await showTimePicker(
+        context: context,
+        initialTime: selectedTime,
+      );
+      if (picked != null && picked != selectedTime) {
+        setState(() {
+          selectedTime = picked;
+          selectedDate = DateTime(
+            selectedDate.year,
+            selectedDate.month,
+            selectedDate.day,
+            picked.hour,
+            picked.minute,
+          );
+        });
+      }
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text('Modifier le rendez-vous'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                // Client Name Field
+                TextField(
+                  controller: clientNameController,
+                  decoration: const InputDecoration(
+                    labelText: 'Nom du client',
+                    prefixIcon: Icon(Icons.person),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Folder Number Field
+                TextField(
+                  controller: folderNumberController,
+                  decoration: const InputDecoration(
+                    labelText: 'Numéro de dossier',
+                    prefixIcon: Icon(Icons.folder),
+                  ),
+                ),
+                const SizedBox(height: 16),
+
+                // Date Picker
+                ListTile(
+                  leading: const Icon(Icons.calendar_today),
+                  title: const Text('Date'),
+                  subtitle:
+                      Text(DateFormat('EEE, MMM d, yyyy').format(selectedDate)),
+                  onTap: () async {
+                    await _selectDate(context);
+                    setDialogState(() {});
+                  },
+                ),
+
+                // Time Picker
+                ListTile(
+                  leading: const Icon(Icons.access_time),
+                  title: const Text('Heure'),
+                  subtitle: Text(selectedTime.format(context)),
+                  onTap: () async {
+                    await _selectTime(context);
+                    setDialogState(() {});
+                  },
+                ),
+                const SizedBox(height: 16),
+
+                // Description Field
+                TextField(
+                  controller: descriptionController,
+                  decoration: const InputDecoration(
+                    labelText: 'Description',
+                    prefixIcon: Icon(Icons.description),
+                    alignLabelWithHint: true,
+                  ),
+                  maxLines: 3,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text('Annuler'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                await AppointmentDB().updateAppointment(Appointment(
+                  appointmentId: appointment.appointmentId,
+                  clientName: clientNameController.text,
+                  folderNumber: folderNumberController.text,
+                  appointmentDateTime: selectedDate,
+                  description: descriptionController.text.isEmpty
+                      ? null
+                      : descriptionController.text,
+                ));
+                try {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Rendez-vous mis à jour')),
+                  );
+                } catch (e) {}
+
+                if (mounted) {
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text('Enregistrer'),
+            ),
+          ],
+        ),
       ),
     );
   }
